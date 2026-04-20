@@ -1,0 +1,71 @@
+#usda 1.0
+(
+    upAxis = "Y"
+)
+
+def "World"
+{
+    def Cube "Qubit_0_0"
+    {
+        color3f[] primvars:displayColor = [(0.1, 0.8, 0.2)]
+        double3 xformOp:translate = (0, 5, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_0_1"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (0, 5, 2)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_0_2"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (0, 5, 4)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_1_0"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (2, 7, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_1_1"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (2, 7, 2)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_1_2"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (2, 7, 4)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_2_0"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (4, 9, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_2_1"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (4, 9, 2)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+
+    def Cube "Qubit_2_2"
+    {
+        color3f[] primvars:displayColor = [(0.8, 0.1, 0.1)]
+        double3 xformOp:translate = (4, 9, 4)
+        uniform token[] xformOpOrder = ["xformOp:translate"]
+    }
+}
+
