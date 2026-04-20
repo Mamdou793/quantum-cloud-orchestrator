@@ -1,4 +1,4 @@
-# Quantum-Cloud-Orchestrator 🌌🔐
+# Quantum-Cloud-Orchestrator
 
 A hybrid cloud-quantum simulation tool that integrates **NVIDIA Omniverse (USD)** with **Azure Quantum**. This project demonstrates how to orchestrate parallel quantum workloads on cloud-hosted hardware (Rigetti) to drive 3D spatial simulations.
 
