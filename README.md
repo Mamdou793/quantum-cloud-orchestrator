@@ -2,14 +2,13 @@
 
 A containerized Python-based orchestrator designed to bridge Quantum Computing workflows with Cloud-Native data pipelines.
 
-##  Architecture Overview
+##   Overview
 This solution implements an end-to-end ETL pipeline:
 1. **Compute Layer**: Containerized Python 3.10 environment (Docker).
 2. **Quantum Ingestion**: Asynchronous job submission to Rigetti QVM via Azure Quantum.
 3. **Data Pipeline**: Automated ingestion of simulation results into Azure Table Storage.
 4. **Security**: Environment-based secret management (Zero-Trust).
 
-##  Getting Started
 
 ### Prerequisites
 - Docker Desktop
