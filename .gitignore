@@ -1,0 +1,14 @@
+# Secrets
+.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Data outputs (keep these local)
+quantum_sim.usda
+results.csv
+
+# Docker
+.dockerignore

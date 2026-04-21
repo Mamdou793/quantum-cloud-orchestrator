@@ -1,23 +1,23 @@
-# Quantum-Cloud-Orchestrator
+# Quantum Cloud Orchestrator (PoC)
 
-A hybrid cloud-quantum simulation tool that integrates **NVIDIA Omniverse (USD)** with **Azure Quantum**. This project demonstrates how to orchestrate parallel quantum workloads on cloud-hosted hardware (Rigetti) to drive 3D spatial simulations.
+A containerized Python-based orchestrator designed to bridge Quantum Computing workflows with Cloud-Native data pipelines.
 
-##  Features
-* **Parallel Execution:** Submits asynchronous quantum circuits to Azure Quantum to bypass sequential latency.
-* **Hybrid Backend:** Bridges Qiskit-based logic with the Rigetti Quantum Virtual Machine (QVM).
-* **3D Orchestration:** Uses Universal Scene Description (USD) to visualize quantum state decisions in a spatial grid.
-* **Cloud Architecture:** Fully decoupled environment using environment variables for secure authentication.
+##  Architecture Overview
+This solution implements an end-to-end ETL pipeline:
+1. **Compute Layer**: Containerized Python 3.10 environment (Docker).
+2. **Quantum Ingestion**: Asynchronous job submission to Rigetti QVM via Azure Quantum.
+3. **Data Pipeline**: Automated ingestion of simulation results into Azure Table Storage.
+4. **Security**: Environment-based secret management (Zero-Trust).
 
-##  Tech Stack
-* **Language:** Python 3.12+
-* **Quantum:** Qiskit, Azure Quantum SDK
-* **Graphics:** NVIDIA USD (pxr-core)
-* **Cloud:** Microsoft Azure (QuantumArchitect-WS)
+##  Getting Started
 
-##  Quick Start
-1. Set your connection string:
-   `export AZURE_QUANTUM_CONNECTION_STRING="your_string"`
-2. Install dependencies:
-   `pip install azure-quantum[qiskit] usd-core`
-3. Run the orchestrator:
-   `python test_quantum.py`
+### Prerequisites
+- Docker Desktop
+- Azure Quantum Workspace
+- Azure Storage Account
+
+### Configuration
+Create a `.env` file in the root directory:
+```text
+AZURE_QUANTUM_CONNECTION_STRING=ResourceId=/subscriptions/...
+AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;...

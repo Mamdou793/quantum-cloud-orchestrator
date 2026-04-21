@@ -1,0 +1,5 @@
+azure-quantum[qiskit]
+qiskit-rigetti
+usd-core
+pandas
+azure-data-tables

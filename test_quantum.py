@@ -1,7 +1,9 @@
-from logic import QuantumOmniTool, provider
+"""Test script for the QuantumOmniTool using a 3x3 grid and running a simulation with shielding."""
+
+import logic
 
 # 1. Initialize the tool with the provider we created
-tool = QuantumOmniTool(provider)
+tool = logic.QuantumOmniTool(logic.provider)
 
 # 2. Generate a small 3x3 grid (9 qubits total)
 # This should create a 3x3 grid of qubits for the simulation; expects generate_grid to accept 'count' as the grid size.

@@ -5,6 +5,9 @@ from azure.quantum import Workspace
 from azure.quantum.qiskit import AzureQuantumProvider
 from pxr import Usd, UsdGeom, Gf
 from qiskit import QuantumCircuit
+from azure.data.tables import TableClient
+import uuid
+from datetime import datetime
 
 # 1. Identity Setup
 connection_string = os.environ.get("AZURE_QUANTUM_CONNECTION_STRING")
@@ -68,47 +71,75 @@ class QuantumOmniTool:
         self.stage.Save()
 
     def run_simulation(self, shielding=0.0, log_file="results.csv"):
-            if not self.qubit_data:
-                return {"Alpha": 0, "Beta": 0}
+        if not self.qubit_data:
+            return {"Alpha": 0, "Beta": 0}
 
-            max_h = max(d["height"] for d in self.qubit_data)
-            stats = {"Alpha": 0, "Beta": 0}
-            
-            # 1. FIRE OFF ALL JOBS AT ONCE (Asynchronous)
-            print(f"Submitting {len(self.qubit_data)} parallel jobs to Rigetti...")
-            jobs = []
-            for data in self.qubit_data:
-                stress = (data["height"] - 5.0) / (max_h - 5.0) if max_h > 5.0 else 0
-                qc = QuantumCircuit(1, 1)
-                qc.h(0)
-                theta = stress * (1.0 - shielding) * math.pi
-                qc.ry(theta, 0)
-                qc.measure(0, 0)
-                
-                # Submit the job but DON'T wait for it yet
-                job = self.backend.run(qc, shots=1)
-                jobs.append((data, job))
+        max_h = max(d["height"] for d in self.qubit_data)
+        stats = {"Alpha": 0, "Beta": 0}
 
-            # 2. COLLECT RESULTS AS THEY FINISH
-            print("Waiting for all cloud results...")
-            with open(log_file, mode='w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(["Qubit_ID", "Fall_Height", "Resulting_State"])
-                
-                for data, job in jobs:
-                    # This line waits for the specific job to finish
-                    result = job.result()
-                    counts = result.get_counts()
-                    measurement = list(counts.keys())[0]
-                    
-                    state = "Beta" if measurement == "1" else "Alpha"
-                    stats[state] += 1
-                    
-                    # Update USD
-                    cube_prim = UsdGeom.Cube.Get(self.stage, data["path"])
-                    color = Gf.Vec3f(0.1, 0.8, 0.2) if state == "Alpha" else Gf.Vec3f(0.8, 0.1, 0.1)
-                    cube_prim.GetDisplayColorAttr().Set([color])
-                    writer.writerow([data["id"], round(data["height"], 2), state])
-            
-            self.stage.Save()
-            return stats
+        print(f"Submitting {len(self.qubit_data)} parallel jobs to Rigetti...")
+        jobs = []
+        for data in self.qubit_data:
+            stress = (data["height"] - 5.0) / (max_h - 5.0) if max_h > 5.0 else 0
+            qc = QuantumCircuit(1, 1)
+            qc.h(0)
+            theta = stress * (1.0 - shielding) * math.pi
+            qc.ry(theta, 0)
+            qc.measure(0, 0)
+
+            job = self.backend.run(qc, shots=1)
+            jobs.append((data, job))
+
+        print("Waiting for all cloud results...")
+        with open(log_file, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(["Qubit_ID", "Fall_Height", "Resulting_State"])
+
+            for data, job in jobs:
+                result = job.result()
+                counts = result.get_counts()
+                measurement = list(counts.keys())[0]
+
+                state = "Beta" if measurement == "1" else "Alpha"
+                stats[state] += 1
+
+                cube_prim = UsdGeom.Cube.Get(self.stage, data["path"])
+                color = self.ALPHA_COLOR if state == "Alpha" else self.BETA_COLOR
+                cube_prim.GetDisplayColorAttr().Set([color])
+                writer.writerow([data["id"], round(data["height"], 2), state])
+
+        self.stage.Save()
+
+        # 🔹 Phase 2: push to cloud
+        self.save_results_to_cloud(stats)
+
+        return stats
+
+    def save_results_to_cloud(self, results):
+        storage_conn_str = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+
+        if not storage_conn_str:
+            print("⚠️ No Storage Connection String found. Skipping cloud save.")
+            return
+
+        table_client = TableClient.from_connection_string(
+            conn_str=storage_conn_str,
+            table_name="QuantumSimResults"
+        )
+
+        try:
+            table_client.create_table()
+        except Exception:
+            pass  # Table already exists
+
+        entity = {
+            "PartitionKey": "SimulationResult",
+            "RowKey": str(uuid.uuid4()),
+            "Timestamp": datetime.utcnow().isoformat(),
+            "AlphaCount": results.get("Alpha", 0),
+            "BetaCount": results.get("Beta", 0),
+            "TotalJobs": sum(results.values()),
+        }
+
+        table_client.create_entity(entity=entity)
+        print("✅ Data successfully ingested into Azure Table Storage!")
