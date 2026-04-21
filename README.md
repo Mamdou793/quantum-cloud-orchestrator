@@ -20,3 +20,10 @@ Create a `.env` file in the root directory:
 ```text
 AZURE_QUANTUM_CONNECTION_STRING=ResourceId=/subscriptions/...
 AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=https;...
+
+
+## Build the image
+docker build -t quantum-orchestrator:v2 .
+
+## Execute the pipeline
+docker run --rm --env-file .env quantum-orchestrator:v2
