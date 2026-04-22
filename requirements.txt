@@ -3,3 +3,6 @@ qiskit-rigetti
 usd-core
 pandas
 azure-data-tables
+fastapi
+uvicorn[standard]
+python-multipart

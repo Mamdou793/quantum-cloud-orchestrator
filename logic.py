@@ -139,6 +139,7 @@ class QuantumOmniTool:
             "AlphaCount": results.get("Alpha", 0),
             "BetaCount": results.get("Beta", 0),
             "TotalJobs": sum(results.values()),
+            
         }
 
         table_client.create_entity(entity=entity)
