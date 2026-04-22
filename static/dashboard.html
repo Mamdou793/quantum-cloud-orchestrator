@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Orchestrator Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #0f172a; 
+            color: #f8fafc; 
+            padding: 40px; 
+            text-align: center; 
+        }
+        .card { 
+            background: #1e293b; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); 
+            max-width: 900px; 
+            margin: auto; 
+        }
+        canvas { 
+            margin-top: 20px; 
+            max-height: 400px;
+        }
+        button { 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            margin-bottom: 20px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #475569; cursor: not-allowed; }
+        #status { margin-bottom: 15px; font-weight: 500; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🌌 Quantum Simulation History</h1>
+        <button onclick="triggerNewRun()" id="runBtn">Run New Simulation</button>
+        <div id="status">Ready</div>
+        <canvas id="quantumChart"></canvas>
+    </div>
+
+    <script>
+        let myChart;
+
+        async function triggerNewRun() {
+            const btn = document.getElementById('runBtn');
+            const statusDiv = document.getElementById('status');
+            
+            btn.disabled = true;
+            statusDiv.innerText = "🚀 Requesting Quantum Cloud...";
+            
+            try {
+                const response = await fetch('/run-simulation', { method: 'POST' });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                pollForCompletion();
+            } catch (error) {
+                statusDiv.innerText = "❌ Failed to start: " + error.message;
+                btn.disabled = false;
+            }
+        }
+
+        async function fetchData() {
+            const statusDiv = document.getElementById('status');
+            try {
+                const response = await fetch('/results');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const data = await response.json();
+                if (!data.history || data.history.length === 0) {
+                    statusDiv.innerText = "📝 No simulation history found.";
+                    return;
+                }
+
+                // Reverse to show oldest to newest on the chart x-axis
+                const history = [...data.history].reverse();
+
+                const labels = history.map((h, i) => {
+                    const date = new Date(h.Timestamp);
+                    return isNaN(date) ? `Run ${i + 1}` : date.toLocaleTimeString();
+                });
+
+                const alphas = history.map(h => h.Alpha);
+                const betas = history.map(h => h.Beta);
+
+                if (myChart) myChart.destroy();
+                
+                const ctx = document.getElementById('quantumChart').getContext('2d');
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            { label: 'Alpha States', data: alphas, backgroundColor: '#10b981' },
+                            { label: 'Beta States', data: betas, backgroundColor: '#ef4444' }
+                        ]
+                    },
+                    options: { 
+                        responsive: true, 
+                        maintainAspectRatio: true,
+                        scales: { y: { beginAtZero: true } } 
+                    }
+                });
+                statusDiv.innerText = "✅ Data Updated";
+            } catch (error) {
+                statusDiv.innerText = "❌ Fetch Error: " + error.message;
+            } finally {
+                document.getElementById('runBtn').disabled = false;
+            }
+        }
+
+        async function pollForCompletion() {
+            let completed = false;
+            const statusDiv = document.getElementById('status');
+            
+            while (!completed) {
+                try {
+                    const res = await fetch('/simulation-status');
+                    const status = await res.json();
+                    if (status.completed) {
+                        completed = true;
+                        fetchData();
+                    } else {
+                        statusDiv.innerText = "⏳ Processing Quantum Job...";
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                } catch (e) {
+                    completed = true; 
+                    document.getElementById('runBtn').disabled = false;
+                    statusDiv.innerText = "⚠️ Error polling status";
+                }
+            }
+        }
+
+        // Initial load
+        fetchData();
+    </script>
+</body>
+</html>
