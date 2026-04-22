@@ -27,6 +27,7 @@ A cloud-native middleware service that orchestrates quantum circuit execution on
    docker build -t quantum-api:v1 .
 
 2.  **Launch the container:**
-docker run -p 8000:8000 --env-file .env quantum-api:v1
+ 
+  docker run -p 8000:8000 --env-file .env quantum-api:v1
 
 Navigate to http://localhost:8000/docs to interact with the API via Swagger UI.
